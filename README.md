@@ -14,7 +14,6 @@
 
 
 ## Os requisitos para cumprir este desafio são:
- ✅
 
  
 [✅] - O client.go deverá realizar uma requisição HTTP no server.go solicitando a cotação do dólar.
