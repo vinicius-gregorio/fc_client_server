@@ -10,7 +10,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	// "github.com/vinicius-gregorio/fc_client_server/internal/db"
+	database "github.com/vinicius-gregorio/fc_client_server/internal/server/db"
 )
 
 // type Server struct {
@@ -40,7 +40,7 @@ func main() {
 	// This is the main function
 	fmt.Println("Hello, server!")
 
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", "root", "root", "mysql", "3306", "wallet"))
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", "root", "root", "localhost", "3306", "challenge01"))
 
 	if err != nil {
 		log.Fatalf("Failed to connect to MySQL: %v", err)
@@ -48,7 +48,7 @@ func main() {
 
 	defer db.Close()
 
-	http.HandleFunc("/cotacao", bidHandler)
+	http.HandleFunc("/cotacao", bidHandler(db))
 	http.ListenAndServe(":8080", nil)
 
 }
@@ -57,32 +57,39 @@ type BidResponse struct {
 	Bid float64 `json:"bid"`
 }
 
-func bidHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	log.Println("Handler started")
-	defer log.Println("Handler ended")
+func bidHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+		defer cancel()
+		log.Println("Handler started")
+		defer log.Println("Handler ended")
 
-	q, err := getQuotation()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		panic(err)
+		q, err := getQuotation(ctx)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			panic(err)
+		}
+
+		err = saveQuotation(db, q)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			panic(err)
+		}
+
+		select {
+		case <-ctx.Done():
+			fmt.Fprintf(w, "done")
+		default:
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			bidResponse := BidResponse{Bid: q.Bid}
+			json.NewEncoder(w).Encode(bidResponse)
+		}
 	}
 
-	select {
-	case <-ctx.Done():
-		fmt.Fprintf(w, "done")
-	case <-time.After(5 * time.Second):
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		bidResponse := BidResponse{Bid: q.Bid}
-		json.NewEncoder(w).Encode(bidResponse)
-	}
 }
 
-func getQuotation() (*Quotation, error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+func getQuotation(ctx context.Context) (*Quotation, error) {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://economia.awesomeapi.com.br/json/last/USD-BRL", nil)
 	if err != nil {
@@ -108,4 +115,17 @@ func getQuotation() (*Quotation, error) {
 	}
 
 	return &quotation, nil
+}
+
+func saveQuotation(db *sql.DB, quotation *Quotation) error {
+	qdb := database.NewQuotationDB(db)
+	err := qdb.Save(&database.SaveQuotation{
+		Name: quotation.Name,
+		Bid:  quotation.Bid,
+		Ask:  quotation.Ask,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

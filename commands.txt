@@ -1,0 +1,10 @@
+docker-compose up -d
+
+
+docker-compose exec mysql bash
+
+mysql -uroot -proot 
+
+use challenge01;
+
+describe quotes;
