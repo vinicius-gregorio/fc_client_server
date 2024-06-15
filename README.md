@@ -4,7 +4,7 @@ Os requisitos para cumprir este desafio são:
  ✅
 
  
-[❌] - O client.go deverá realizar uma requisição HTTP no server.go solicitando a cotação do dólar.
+[✅] - O client.go deverá realizar uma requisição HTTP no server.go solicitando a cotação do dólar.
  
 [✅]- O server.go deverá consumir a API contendo o câmbio de Dólar e Real no endereço: https://economia.awesomeapi.com.br/json/last/USD-BRL e em seguida deverá retornar no formato JSON o resultado para o cliente.
  
@@ -14,8 +14,8 @@ Os requisitos para cumprir este desafio são:
  
 [❌]- Os 3 contextos deverão retornar erro nos logs caso o tempo de execução seja insuficiente.
  
-[❌]- O client.go terá que salvar a cotação atual em um arquivo "cotacao.txt" no formato: Dólar: {valor}
+[✅]- O client.go terá que salvar a cotação atual em um arquivo "cotacao.txt" no formato: Dólar: {valor}
  
-[❌]- O endpoint necessário gerado pelo server.go para este desafio será: /cotacao e a porta a ser utilizada pelo servidor HTTP será a 8080.
+[✅]- O endpoint necessário gerado pelo server.go para este desafio será: /cotacao e a porta a ser utilizada pelo servidor HTTP será a 8080.
  
 [❌]- Ao finalizar, envie o link do repositório para correção
