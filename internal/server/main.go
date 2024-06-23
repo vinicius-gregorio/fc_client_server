@@ -9,17 +9,9 @@ import (
 	"net/http"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 	database "github.com/vinicius-gregorio/fc_client_server/internal/server/db"
 )
-
-// type Server struct {
-// 	DB db.DB
-// }
-
-// func (s *Server) NewServer(database db.DB) *Server {
-// 	return &Server{DB: database}
-// }
 
 type Quotation struct {
 	ID         int     `json:"id"`
@@ -37,10 +29,10 @@ type Quotation struct {
 }
 
 func main() {
-	// This is the main function
+
 	fmt.Println("Hello, server!")
 
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", "root", "root", "localhost", "3306", "challenge01"))
+	db, err := sql.Open("sqlite3", "fc_client_server.db")
 
 	if err != nil {
 		log.Fatalf("Failed to connect to MySQL: %v", err)

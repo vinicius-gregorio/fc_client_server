@@ -2,13 +2,10 @@
 
 ## Como rodar este projeto?
 
-### 1 - Inicie o docker compose
- > ```$ docker-compose up -d```
-
-### 2 - Inicie o servidor
+### 1 - Inicie o servidor
  > ```go run internal/server/main.go```
 
-### 3 - Inicie o cliente
+### 2 - Inicie o cliente
  > ```go run internal/client/main.go```
 
 
